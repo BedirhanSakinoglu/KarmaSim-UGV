@@ -3,6 +3,7 @@
 import rospy
 import time
 import threading
+import math
 from karmasim_ros_wrapper.msg import UxvStates
 from karmasim_ros_wrapper.msg import PointsOfInterest
 from karmasim_ros_wrapper.msg import CarControls
@@ -12,6 +13,7 @@ poi_counter = 0
 is_first_move = True
 uxv_name = 'ugv_1'
 uxv = None
+uxv_speed = 0
 directions = ['W','N','E','S']
 direction_index = 0
 recent_turn = None
@@ -23,6 +25,7 @@ car_cmd = None
 rsc = None
 target_index = 0
 
+
 class GoToCoordinate:
     def set_location(self, x, y):
         self.target = (x,y)
@@ -31,15 +34,18 @@ class GoToCoordinate:
         if self.target == None:
             return
         
-        print("Speed: ", uxv.state)
+        #print("Speed: ", uxv.state)
 
         if directions[direction_index] == 'W':
-            print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+            #print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
             if uxv.pose.position.y > self.target[1]:
                 rsc.throttle(3.5)
                 print("hey there")
-            elif uxv.pose.position.y < self.target[1] :
-                rsc.throttle(-2.0)
+            elif uxv.pose.position.y < self.target[1] and rsc.current_speed != 0 :
+                rsc.brake()
+            elif uxv.pose.position.y < self.target[1] and rsc.current_speed == 0 :
+                pass
+                #geri geri git
             else:
                 rsc.throttle(0)
                 rsc.brake()
@@ -68,6 +74,22 @@ class RosController:
     result = request(uxv_name)
     pub = rospy.Publisher('/karmasim_node/ugv_1/ugv_cmd', CarControls, queue_size=10)
     car_cmd = CarControls()
+    last_position = None
+    last_time = None
+    current_speed = 0.0
+    
+    def set_last_position(self):
+        self.last_position = (uxv.pose.position.x, uxv.pose.position.y)
+        
+    def set_last_time(self):
+        self.last_time = rospy.get_time()
+
+    def calculate_speed(self):
+        distance = math.sqrt(math.pow(uxv.pose.position.x - self.last_position[0], 2) + math.pow(uxv.pose.position.y - self.last_position[1], 2))
+        time = rospy.get_time() - self.last_time
+        print("distance: ", distance)
+        print("time: ", time)
+        self.current_speed = distance/time
 
     def set_for_start(self):
         self.car_cmd.handbrake = False
@@ -104,6 +126,13 @@ class RosController:
         self.pub.publish(car_cmd)
         request = rospy.ServiceProxy('/karmasim_node/vehicle_stop', VehicleStop)
         self.result = request(uxv_name)
+
+    def looper(self):
+        self.set_last_position()
+        self.set_last_time()
+        time.sleep(0.4)
+        self.calculate_speed()
+        print("SPEED: ", self.current_speed)
 
 def adjuster():
     print("W: ", uxv.pose.orientation.w)
@@ -263,9 +292,9 @@ def looper(timer):
     if uxv == None:
         return
 
+    rsc.looper()
     gtc.set_location(0,-24)
     gtc.looper()
-
 
     return
 
@@ -327,7 +356,7 @@ def callback2(data):
 def callback(data):
     global uxv
     for x in data.uxvs:
-        print("This is callback: ", uxv_name)
+        #print("This is callback: ", uxv_name)
         if (x.name == uxv_name):
             uxv = x
 
@@ -360,15 +389,16 @@ if __name__ == "__main__":
         # (0, -12.2, -0.5),
         # (-6.4, -12.2, -0.5)
     ]
+
+    rsc = RosController()
+    gtc = GoToCoordinate()
     
     try:
         timer = rospy.Timer(rospy.Duration(0.01), looper)
         rospy.Subscriber("/karmasim_node/uxv_states", UxvStates, callback)
         rospy.Subscriber("/karmasim_node/points_of_interest", PointsOfInterest, callback2)
-        #rospy.Subscriber("/karmasim_node/ugv_1/odom_local_ned", Odometry, callback3)
+        #rospy.Subscriber("/karmasim_node/ugv_1/odom_local_ned", callback3)
         rospy.wait_for_service('/karmasim_node/vehicle_start')
-        rsc = RosController()
-        gtc = GoToCoordinate()
         rospy.spin()
     except:
         pass
