@@ -27,6 +27,8 @@ target_index = 0
 
 
 class GoToCoordinate:
+    target = None
+
     def set_location(self, x, y):
         self.target = (x,y)
     
@@ -35,38 +37,142 @@ class GoToCoordinate:
             return
         
         #print("Speed: ", uxv.state)
-
         if directions[direction_index] == 'W':
             #print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
-            if uxv.pose.position.y > self.target[1]:
-                rsc.throttle(3.5)
-                print("hey there")
-            elif uxv.pose.position.y < self.target[1] and rsc.current_speed != 0 :
-                rsc.brake()
+            if (uxv.pose.position.y > (self.target[1] - 5)) and (uxv.pose.position.y < (self.target[1] + 5)) and rsc.current_speed == 0:
+                print("OK")
+                #action
+            elif uxv.pose.position.y > self.target[1] and rsc.current_speed == 0 :
+                rsc.forward_gear()
+                rsc.brake(False)
+                rsc.throttle(0.4)
+                print("VIN VIN")
+            elif (uxv.pose.position.y > self.target[1] - 5) and rsc.gear == -1 :
+                rsc.throttle(0)
+                rsc.brake(True)
+                print("STOP")
+            elif uxv.pose.position.y > self.target[1] + 10:
+                rsc.forward_gear()
+                rsc.throttle(0.4)
+                rsc.brake(False)
+                print("go go go")
             elif uxv.pose.position.y < self.target[1] and rsc.current_speed == 0 :
-                pass
-                #geri geri git
-            else:
+                rsc.reverse_gear()
+                rsc.brake(False)
+                rsc.throttle(-1)
+                print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
+            elif uxv.pose.position.y < self.target[1] - 5 and rsc.gear == -1 :
+                rsc.brake(False)
+                #rsc.reverse_gear()
+                rsc.throttle(-0.4)
+                print("gear : " , rsc.gear)
+                print("GO BACK")
+            elif uxv.pose.position.y < self.target[1] + 10 and rsc.gear == 1 :
                 rsc.throttle(0)
-                rsc.brake()
-        elif directions[direction_index] == 'N': 
-            if uxv.pose.position.x < self.target[0]:
-                rsc.throttle(3.5)
-            else:
+                rsc.brake(True)
+                print("STOP")
+            
+        elif directions[direction_index] == 'N':
+            if (uxv.pose.position.x < self.target[0] + 5) and (uxv.pose.position.x > self.target[0] - 5) and rsc.current_speed == 0:
+                print("OK")
+                #action
+            elif uxv.pose.position.x < self.target[0] and rsc.current_speed == 0 :
+                rsc.forward_gear()
+                rsc.brake(False)
+                rsc.throttle(0.4)
+                print("VIN VIN")
+            elif (uxv.pose.position.x < self.target[0] + 5) and rsc.gear == -1 :
                 rsc.throttle(0)
-                rsc.brake()
+                rsc.brake(True)
+                print("STOP")
+            elif uxv.pose.position.x < self.target[0] - 10:
+                rsc.forward_gear()
+                rsc.throttle(0.4)
+                rsc.brake(False)
+                print("go go go")
+            elif uxv.pose.position.x > self.target[0] and rsc.current_speed == 0 :
+                rsc.reverse_gear()
+                rsc.brake(False)
+                rsc.throttle(-1)
+                print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
+            elif uxv.pose.position.x > self.target[0] + 5 and rsc.gear == -1 :
+                rsc.brake(False)
+                #rsc.reverse_gear()
+                rsc.throttle(-0.4)
+                print("gear : " , rsc.gear)
+                print("GO BACK")
+            elif uxv.pose.position.x > self.target[0] - 10 and rsc.gear == 1 :
+                rsc.throttle(0)
+                rsc.brake(True)
+                print("STOP")
+            
         elif directions[direction_index] == 'E':
-            if uxv.pose.position.y < self.target[1]:
-                rsc.throttle(3.5)
-            else:
+            if (uxv.pose.position.y < (self.target[1] + 5)) and (uxv.pose.position.y > (self.target[1] - 5)) and rsc.current_speed == 0:
+                print("OK")
+                #action
+            elif uxv.pose.position.y < self.target[1] and rsc.current_speed == 0 :
+                rsc.forward_gear()
+                rsc.brake(False)
+                rsc.throttle(0.4)
+                print("VIN VIN")
+            elif (uxv.pose.position.y < self.target[1] + 5) and rsc.gear == -1 :
                 rsc.throttle(0)
-                rsc.brake()
+                rsc.brake(True)
+                print("STOP")
+            elif uxv.pose.position.y < self.target[1] - 10:
+                rsc.forward_gear()
+                rsc.throttle(0.4)
+                rsc.brake(False)
+                print("go go go")
+            elif uxv.pose.position.y > self.target[1] and rsc.current_speed == 0 :
+                rsc.reverse_gear()
+                rsc.brake(False)
+                rsc.throttle(-1)
+                print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
+            elif uxv.pose.position.y > self.target[1] + 5 and rsc.gear == -1 :
+                rsc.brake(False)
+                #rsc.reverse_gear()
+                rsc.throttle(-0.4)
+                print("gear : " , rsc.gear)
+                print("GO BACK")
+            elif uxv.pose.position.y > self.target[1] - 10 and rsc.gear == 1 :
+                rsc.throttle(0)
+                rsc.brake(True)
+                print("STOP")
+
         elif directions[direction_index] == 'S':
-            if uxv.pose.position.x > self.target[0]:
-                rsc.throttle(3.5)
-            else:
+            if (uxv.pose.position.x > self.target[0] - 5) and (uxv.pose.position.x < self.target[0] + 5) and rsc.current_speed == 0:
+                print("OK")
+                #action
+            elif uxv.pose.position.x > self.target[0] and rsc.current_speed == 0 :
+                rsc.forward_gear()
+                rsc.brake(False)
+                rsc.throttle(0.4)
+                print("VIN VIN")
+            elif (uxv.pose.position.x > self.target[0] - 5) and rsc.gear == -1 :
                 rsc.throttle(0)
-                rsc.brake()
+                rsc.brake(True)
+                print("STOP")
+            elif uxv.pose.position.x > self.target[0] + 10:
+                rsc.forward_gear()
+                rsc.throttle(0.4)
+                rsc.brake(False)
+                print("go go go")
+            elif uxv.pose.position.x < self.target[0] and rsc.current_speed == 0 :
+                rsc.reverse_gear()
+                rsc.brake(False)
+                rsc.throttle(-1)
+                print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
+            elif uxv.pose.position.x < self.target[0] - 5 and rsc.gear == -1 :
+                rsc.brake(False)
+                #rsc.reverse_gear()
+                rsc.throttle(-0.4)
+                print("gear : " , rsc.gear)
+                print("GO BACK")
+            elif uxv.pose.position.x < self.target[0] + 10 and rsc.gear == 1 :
+                rsc.throttle(0)
+                rsc.brake(True)
+                print("STOP")
 
 class RosController:
     uxv_name = rospy.get_param('~uxv_name', 'ugv_1')
@@ -74,9 +180,10 @@ class RosController:
     result = request(uxv_name)
     pub = rospy.Publisher('/karmasim_node/ugv_1/ugv_cmd', CarControls, queue_size=10)
     car_cmd = CarControls()
-    last_position = None
-    last_time = None
+    last_position = (0,0)
+    last_time = 0
     current_speed = 0.0
+    gear = 0
     
     def set_last_position(self):
         self.last_position = (uxv.pose.position.x, uxv.pose.position.y)
@@ -93,27 +200,44 @@ class RosController:
 
     def set_for_start(self):
         self.car_cmd.handbrake = False
-        self.car_cmd.gear_immediate = False
+        self.car_cmd.gear_immediate = True
         self.car_cmd.brake = 0
         self.car_cmd.manual = False
         self.car_cmd.throttle = 0.4
+        self.gear = 1
         if self.car_cmd.manual_gear != 1:
             self.car_cmd.manual_gear = 1
         self.pub.publish(self.car_cmd)
 
     def steer(self, steering_value):
         #print("uxv name is : ", uxv_name)
-        print("steering value = ", steering_value)
+        #print("steering value = ", steering_value)
         self.car_cmd.steering = steering_value
         self.pub.publish(self.car_cmd)
 
     def throttle(self, throttle_value):
         self.car_cmd.throttle = throttle_value
+        self.car_cmd.manual_gear = self.gear
         self.pub.publish(self.car_cmd)
 
-    def brake(self):
-        self.car_cmd.brake = not self.car_cmd.brake
+    def brake(self, is_brake):
+        self.car_cmd.brake = is_brake
         self.pub.publish(self.car_cmd)
+
+    def reverse_gear(self):
+        self.car_cmd.manual = True
+        self.gear = -1
+        self.car_cmd.manual_gear = -1
+        self.car_cmd.gear_immediate = True
+        self.pub.publish
+        #self.car_cmd.manual = False
+
+    def forward_gear(self):
+        self.gear = 1
+        self.car_cmd.manual = False
+        self.car_cmd.manual_gear = 1
+        self.pub.publish
+        #self.car_cmd.manual = False
 
     def finish(self):
         car_cmd = CarControls()
@@ -128,44 +252,45 @@ class RosController:
         self.result = request(uxv_name)
 
     def looper(self):
-        self.set_last_position()
-        self.set_last_time()
-        time.sleep(0.4)
-        self.calculate_speed()
-        print("SPEED: ", self.current_speed)
+        if (rospy.get_time() - self.last_time) > 1:
+            #time.sleep(0.4)
+            self.calculate_speed()
+            self.set_last_position()
+            self.set_last_time()
+            print("SPEED: ", self.current_speed)
 
 def adjuster():
-    print("W: ", uxv.pose.orientation.w)
+    #print("W: ", uxv.pose.orientation.w)
     if directions[direction_index] == 'W':
         if uxv.pose.orientation.w < 0.7:
-            turn_value = (0.7 - uxv.pose.orientation.w)*1 + 0.05
-            rsc.steer(turn_value) 
+            turn_value = (0.7 - uxv.pose.orientation.w)*4 + 0.05
+            rsc.steer(rsc.gear * turn_value) 
         elif uxv.pose.orientation.w > 0.7:
-            turn_value = (0.7 - uxv.pose.orientation.w)*4 - 0.05
-            rsc.steer(turn_value)
+            turn_value = (0.7 - uxv.pose.orientation.w)*8 - 0.05
+            rsc.steer(rsc.gear * turn_value)
     elif directions[direction_index] == 'N':
         if uxv.pose.orientation.z < 0:
             print("right right right")
-            turn_value = (1 - uxv.pose.orientation.w)*4 + 0.05
-            rsc.steer(turn_value)
+            turn_value = (1 - uxv.pose.orientation.w)*8 + 0.05
+            rsc.steer(rsc.gear * turn_value)
         elif uxv.pose.orientation.z > 0:
             print("left left left")
-            turn_value = (1 - uxv.pose.orientation.w)*4 + 0.05
-            rsc.steer(-turn_value)
+            turn_value = (1 - uxv.pose.orientation.w)*8 + 0.05
+            rsc.steer(rsc.gear * -turn_value)
     elif directions[direction_index] == 'E':
         if uxv.pose.orientation.w < 0.7:
-            turn_value = (0.7 - uxv.pose.orientation.w)*2 + 0.05
-            rsc.steer(-turn_value)
+            turn_value = (0.7 - uxv.pose.orientation.w)*4 + 0.05
+            rsc.steer(rsc.gear * -turn_value)
         elif uxv.pose.orientation.w > 0.7:
-            turn_value = (0.7 - uxv.pose.orientation.w)*4 - 0.05
-            rsc.steer(-turn_value)
+            turn_value = (0.7 - uxv.pose.orientation.w)*8 - 0.05
+            rsc.steer(rsc.gear * -turn_value)
     elif directions[direction_index] == 'S':
         if uxv.pose.orientation.z < 0:
-            turn_value = (0 - uxv.pose.orientation.w)*2 - 0.05
-            rsc.steer(turn_value)
+            turn_value = (0 - uxv.pose.orientation.w)*4 - 0.05
+            rsc.steer(rsc.gear * turn_value)
         elif uxv.pose.orientation.z > 0:
-            turn_value = (0 - uxv.pose.orientation.w)*2 - 0.05
-            rsc.steer(-turn_value)
+            turn_value = (0 - uxv.pose.orientation.w)*4 - 0.05
+            rsc.steer(rsc.gear * -turn_value)
     
     #rsc.throttle(0.35)
 
@@ -293,10 +418,11 @@ def looper(timer):
         return
 
     rsc.looper()
-    gtc.set_location(0,-24)
+    if directions[direction_index] == 'S':
+        gtc.set_location(0,26)
     gtc.looper()
 
-    return
+    #return
 
     global is_first_move
     global recent_turn
@@ -307,8 +433,8 @@ def looper(timer):
     if is_first_move:
         start_move()
     else:
-        if directions[direction_index] == 'S':
-            gtc.set_location(-5,26)
+        #if directions[direction_index] == 'S':
+            #gtc.set_location(-5,26)
         counter = 0
         #print("X : ", uxv.pose.position.x, ", Y : ", uxv.pose.position.y)
         #print(uxv.pose.position.y)
@@ -336,13 +462,13 @@ def looper(timer):
         
         #poi --------------
 
-        for a in turns:
-            for b in a[3]:
-                if (poi[target_index].pose.position.x <= a[0] and poi[target_index].pose.position.x >= turns[b][0]) or (poi[target_index].pose.position.x >= a[0] and poi[target_index].pose.position.x <= turns[b][0]):
-                    rospy.loginfo("heyo")
-                    if (poi[target_index].pose.position.y <= a[1] and poi[target_index].pose.position.y >= turns[b][1]) or (poi[target_index].pose.position.y >= a[1] and poi[target_index].pose.position.y <=turns[b][1]):
-                        print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
-                        print("this poi is between turns ", turns.index(a), " and ", turns.index(b))
+        #for a in turns:
+        #    for b in a[3]:
+        #        if (poi[target_index].pose.position.x <= a[0] and poi[target_index].pose.position.x >= turns[b][0]) or (poi[target_index].pose.position.x >= a[0] and poi[target_index].pose.position.x <= turns[b][0]):
+        #            rospy.loginfo("heyo")
+        #            if (poi[target_index].pose.position.y <= a[1] and poi[target_index].pose.position.y >= turns[b][1]) or (poi[target_index].pose.position.y >= a[1] and poi[target_index].pose.position.y <=turns[b][1]):
+        #                print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+        #                print("this poi is between turns ", turns.index(a), " and ", turns.index(b))
 
 #rospy.Timer(rospy.Duration(1), looper)
 #print("timer is here")
