@@ -23,16 +23,56 @@ poi = None
 timer = None
 car_cmd = None
 rsc = None
+gtc = None
 target_index = 0
+vehicle_state = None
 
+class GoToTarget:
+    pass
+
+class GoToTurn:
+    turn_index = None
+    target_direction = None
+    flag = False
+    #target_corner = None
+
+    def set_target_corner(self, turn_index, target_direction):
+        self.turn_index = turn_index
+        self.target_direction = target_direction
+        gtc.set_location(turns[self.turn_index][0], turns[self.turn_index][1])
+
+    def looper(self):
+        if self.turn_index == None:
+            return            
+        if vehicle_state == 'TURN':
+            if self.target_direction == 'RIGHT':
+                print("heeyo")
+                turn_right()
+                self.flag = True
+            elif self.target_direction == 'LEFT':
+                print("aaaayo")
+                turn_left()
+                self.flag = True
+        elif self.flag:
+            self.target_direction = None
+            self.turn_index = None
+            self.flag = False
+            gtc.mission_completed()
+            print("Mission failed succesfully")
 
 class GoToCoordinate:
     target = None
 
     def set_location(self, x, y):
         self.target = (x,y)
+
+    def mission_completed(self):
+        self.target = None
     
     def looper(self):
+        if vehicle_state == 'TURN':
+            return
+
         if self.target == None:
             return
         
@@ -41,17 +81,18 @@ class GoToCoordinate:
             #print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
             if (uxv.pose.position.y > (self.target[1] - 5)) and (uxv.pose.position.y < (self.target[1] + 5)) and rsc.current_speed == 0:
                 print("OK")
+                self.mission_completed()
                 #action
             elif uxv.pose.position.y > self.target[1] and rsc.current_speed == 0 :
                 rsc.forward_gear()
                 rsc.brake(False)
                 rsc.throttle(0.4)
                 print("VIN VIN")
-            elif (uxv.pose.position.y > self.target[1] - 5) and rsc.gear == -1 :
+            elif (uxv.pose.position.y > self.target[1] - 2.5) and rsc.gear == -1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
-            elif uxv.pose.position.y > self.target[1] + 10:
+            elif uxv.pose.position.y > self.target[1] + 5:
                 rsc.forward_gear()
                 rsc.throttle(0.4)
                 rsc.brake(False)
@@ -61,13 +102,13 @@ class GoToCoordinate:
                 rsc.brake(False)
                 rsc.throttle(-1)
                 print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
-            elif uxv.pose.position.y < self.target[1] - 5 and rsc.gear == -1 :
+            elif uxv.pose.position.y < self.target[1] - 2.5 and rsc.gear == -1 :
                 rsc.brake(False)
                 #rsc.reverse_gear()
                 rsc.throttle(-0.4)
                 print("gear : " , rsc.gear)
                 print("GO BACK")
-            elif uxv.pose.position.y < self.target[1] + 10 and rsc.gear == 1 :
+            elif uxv.pose.position.y < self.target[1] + 5 and rsc.gear == 1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
@@ -75,17 +116,18 @@ class GoToCoordinate:
         elif directions[direction_index] == 'N':
             if (uxv.pose.position.x < self.target[0] + 5) and (uxv.pose.position.x > self.target[0] - 5) and rsc.current_speed == 0:
                 print("OK")
+                self.mission_completed()
                 #action
             elif uxv.pose.position.x < self.target[0] and rsc.current_speed == 0 :
                 rsc.forward_gear()
                 rsc.brake(False)
                 rsc.throttle(0.4)
                 print("VIN VIN")
-            elif (uxv.pose.position.x < self.target[0] + 5) and rsc.gear == -1 :
+            elif (uxv.pose.position.x < self.target[0] + 2.5) and rsc.gear == -1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
-            elif uxv.pose.position.x < self.target[0] - 10:
+            elif uxv.pose.position.x < self.target[0] - 5:
                 rsc.forward_gear()
                 rsc.throttle(0.4)
                 rsc.brake(False)
@@ -95,13 +137,13 @@ class GoToCoordinate:
                 rsc.brake(False)
                 rsc.throttle(-1)
                 print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
-            elif uxv.pose.position.x > self.target[0] + 5 and rsc.gear == -1 :
+            elif uxv.pose.position.x > self.target[0] + 2.5 and rsc.gear == -1 :
                 rsc.brake(False)
                 #rsc.reverse_gear()
                 rsc.throttle(-0.4)
                 print("gear : " , rsc.gear)
                 print("GO BACK")
-            elif uxv.pose.position.x > self.target[0] - 10 and rsc.gear == 1 :
+            elif uxv.pose.position.x > self.target[0] - 5 and rsc.gear == 1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
@@ -109,17 +151,18 @@ class GoToCoordinate:
         elif directions[direction_index] == 'E':
             if (uxv.pose.position.y < (self.target[1] + 5)) and (uxv.pose.position.y > (self.target[1] - 5)) and rsc.current_speed == 0:
                 print("OK")
+                self.mission_completed()
                 #action
             elif uxv.pose.position.y < self.target[1] and rsc.current_speed == 0 :
                 rsc.forward_gear()
                 rsc.brake(False)
                 rsc.throttle(0.4)
                 print("VIN VIN")
-            elif (uxv.pose.position.y < self.target[1] + 5) and rsc.gear == -1 :
+            elif (uxv.pose.position.y < self.target[1] + 2.5) and rsc.gear == -1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
-            elif uxv.pose.position.y < self.target[1] - 10:
+            elif uxv.pose.position.y < self.target[1] - 5:
                 rsc.forward_gear()
                 rsc.throttle(0.4)
                 rsc.brake(False)
@@ -129,31 +172,32 @@ class GoToCoordinate:
                 rsc.brake(False)
                 rsc.throttle(-1)
                 print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
-            elif uxv.pose.position.y > self.target[1] + 5 and rsc.gear == -1 :
+            elif uxv.pose.position.y > self.target[1] + 2.5 and rsc.gear == -1 :
                 rsc.brake(False)
                 #rsc.reverse_gear()
                 rsc.throttle(-0.4)
                 print("gear : " , rsc.gear)
                 print("GO BACK")
-            elif uxv.pose.position.y > self.target[1] - 10 and rsc.gear == 1 :
+            elif uxv.pose.position.y > self.target[1] - 5 and rsc.gear == 1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
 
         elif directions[direction_index] == 'S':
-            if (uxv.pose.position.x > self.target[0] - 5) and (uxv.pose.position.x < self.target[0] + 5) and rsc.current_speed == 0:
+            if (uxv.pose.position.x > self.target[0] - 5 ) and (uxv.pose.position.x < self.target[0] + 5) and rsc.current_speed == 0:
                 print("OK")
+                self.mission_completed()
                 #action
             elif uxv.pose.position.x > self.target[0] and rsc.current_speed == 0 :
                 rsc.forward_gear()
                 rsc.brake(False)
                 rsc.throttle(0.4)
                 print("VIN VIN")
-            elif (uxv.pose.position.x > self.target[0] - 5) and rsc.gear == -1 :
+            elif (uxv.pose.position.x > self.target[0] - 2.5) and rsc.gear == -1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
-            elif uxv.pose.position.x > self.target[0] + 10:
+            elif uxv.pose.position.x > self.target[0] + 5:
                 rsc.forward_gear()
                 rsc.throttle(0.4)
                 rsc.brake(False)
@@ -163,13 +207,13 @@ class GoToCoordinate:
                 rsc.brake(False)
                 rsc.throttle(-1)
                 print("RRRRRRRRRRRRRRRRRRRRRRRRRR")
-            elif uxv.pose.position.x < self.target[0] - 5 and rsc.gear == -1 :
+            elif uxv.pose.position.x < self.target[0] - 2.5 and rsc.gear == -1 :
                 rsc.brake(False)
                 #rsc.reverse_gear()
                 rsc.throttle(-0.4)
                 print("gear : " , rsc.gear)
                 print("GO BACK")
-            elif uxv.pose.position.x < self.target[0] + 10 and rsc.gear == 1 :
+            elif uxv.pose.position.x < self.target[0] + 5 and rsc.gear == 1 :
                 rsc.throttle(0)
                 rsc.brake(True)
                 print("STOP")
@@ -212,6 +256,8 @@ class RosController:
     def steer(self, steering_value):
         #print("uxv name is : ", uxv_name)
         #print("steering value = ", steering_value)
+        self.car_cmd.throttle = 0.4
+        self.car_cmd.brake = False  #TODO
         self.car_cmd.steering = steering_value
         self.pub.publish(self.car_cmd)
 
@@ -270,11 +316,11 @@ def adjuster():
             rsc.steer(rsc.gear * turn_value)
     elif directions[direction_index] == 'N':
         if uxv.pose.orientation.z < 0:
-            print("right right right")
+            #print("right right right")
             turn_value = (1 - uxv.pose.orientation.w)*8 + 0.05
             rsc.steer(rsc.gear * turn_value)
         elif uxv.pose.orientation.z > 0:
-            print("left left left")
+            #print("left left left")
             turn_value = (1 - uxv.pose.orientation.w)*8 + 0.05
             rsc.steer(rsc.gear * -turn_value)
     elif directions[direction_index] == 'E':
@@ -300,44 +346,44 @@ def turn_right():
     global turning_flag
 
     if directions[direction_index] == 'W':
-        print("heading West, turn right")
+        #print("heading West, turn right")
         if uxv.pose.orientation.w < 0.98:
             rsc.steer(3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index += 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'N':
-        print("heading North, turn right")
+        #print("heading North, turn right")
         if uxv.pose.orientation.w > 0.80:
             rsc.steer(3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index += 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'E':
-        print("heading East, turn right")
+        #print("heading East, turn right")
         if uxv.pose.orientation.w > 0.05:
             rsc.steer(3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index += 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'S':
-        print("heading South, turn right")
+        #print("heading South, turn right")
         if uxv.pose.orientation.w < 0.68:
             rsc.steer(3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index += 1
             is_first_move = False
@@ -351,44 +397,44 @@ def turn_left():
     global turning_flag
     
     if directions[direction_index] == 'W':
-        print("heading West, turn left")
+        #print("heading West, turn left")
         if uxv.pose.orientation.w > 0.05:
             rsc.steer(-3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index -= 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'N':
-        print("heading North, turn left")
+        #print("heading North, turn left")
         if uxv.pose.orientation.w > 0.80:
             rsc.steer(-3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index -= 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'E':
-        print("heading East, turn left")
+        #print("heading East, turn left")
         if uxv.pose.orientation.w < 0.98:
             rsc.steer(-3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index -= 1
             is_first_move = False
             turning_flag = False
 
     elif directions[direction_index] == 'S':
-        print("heading South, turn left")
+        #print("heading South, turn left")
         if uxv.pose.orientation.w < 0.7:
             rsc.steer(-3.0)
         else:
-            print("turning complete")
+            #print("turning complete")
             rsc.steer(0)
             direction_index -= 1
             is_first_move = False
@@ -418,9 +464,9 @@ def looper(timer):
         return
 
     rsc.looper()
-    if directions[direction_index] == 'S':
-        gtc.set_location(0,26)
-    gtc.looper()
+    #if directions[direction_index] == 'S':
+        #gtc.set_location(0,26)
+    
 
     #return
 
@@ -433,11 +479,15 @@ def looper(timer):
     if is_first_move:
         start_move()
     else:
+        gtc.looper()
+        gtt.looper()
+        global vehicle_state
         #if directions[direction_index] == 'S':
             #gtc.set_location(-5,26)
         counter = 0
         #print("X : ", uxv.pose.position.x, ", Y : ", uxv.pose.position.y)
         #print(uxv.pose.position.y)
+        vehicle_state = None
         for x in turns:
             if abs(x[0]-uxv.pose.position.x) < 5 or turning_flag:
                 if abs(x[1]-uxv.pose.position.y) < 5 or turning_flag:
@@ -446,12 +496,14 @@ def looper(timer):
                         pass
                         #print("hadi")
                     else:
+                        global vehicle_state
                         turning_flag = True
                         recent_index = direction_index
                         if abs(x[0]-uxv.pose.position.x) < 5 and abs(x[1]-uxv.pose.position.y) < 5:
                             recent_turn = x
                             #print("INDEX: ", turns.index(x))
-                        turn_right()
+                        #turn_right()
+                        vehicle_state = 'TURN'
 
                 else:
                     #print("ADJUST")
@@ -461,7 +513,7 @@ def looper(timer):
                 adjuster()
         
         #poi --------------
-
+        #print (vehicle_state)
         #for a in turns:
         #    for b in a[3]:
         #        if (poi[target_index].pose.position.x <= a[0] and poi[target_index].pose.position.x >= turns[b][0]) or (poi[target_index].pose.position.x >= a[0] and poi[target_index].pose.position.x <= turns[b][0]):
@@ -518,6 +570,9 @@ if __name__ == "__main__":
 
     rsc = RosController()
     gtc = GoToCoordinate()
+    gtt = GoToTurn()
+
+    gtt.set_target_corner(10, 'RIGHT')
     
     try:
         timer = rospy.Timer(rospy.Duration(0.01), looper)
