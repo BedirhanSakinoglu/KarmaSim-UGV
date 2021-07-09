@@ -160,6 +160,7 @@ class VehicleCommands:
         if globals.is_first_move:
             self.start_move()
         else:
+            #print("----")
             globals.gtc.looper()
             globals.gtt.looper()
             globals.gttarget.looper()
@@ -194,6 +195,7 @@ class VehicleCommands:
                     #print("ADJUST")
                     self.adjuster()
             
+            #print("POI LOCATION : ", globals.poi[globals.target_index].pose.position.x , " ", globals.poi[globals.target_index].pose.position.y)
             #poi --------------
             #print (vehicle_state)
             #for a in turns:

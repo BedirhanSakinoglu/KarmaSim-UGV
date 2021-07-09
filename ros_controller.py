@@ -92,4 +92,4 @@ class RosController:
             self.calculate_speed()
             self.set_last_position()
             self.set_last_time()
-            print("SPEED: ", self.current_speed)
+            #print("SPEED: ", self.current_speed)
