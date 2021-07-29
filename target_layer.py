@@ -1,5 +1,6 @@
 import globals
 import math
+import sys
 
 class GoToTarget:
 
@@ -34,12 +35,11 @@ class GoToTarget:
                         agent_turn2 = globals.turns[b]
                         agent_flag = True
 
-        agent = globals.uxv
-        poi = globals.poi
-        vertices = [agent, poi, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
+        globals.vertices = ['agent', 'poi', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         # H -> Horizontal
         # V -> Vertical
-        edges = [
+        globals.edges = [
             (0,1,50,'H'),
             (1,0,50,'H'),
             (0,3,60,'V'),
@@ -83,7 +83,7 @@ class GoToTarget:
         ]
 
         #poi finder algorithm
-        for edge in edges:
+        for edge in globals.edges:
             if edge[3] == 'H':
                 if abs( globals.turns[edge[0]][0] - globals.poi[globals.target_index].pose.position.x ) < 5:
                     if( globals.turns[edge[0]][1] < globals.poi[globals.target_index].pose.position.y and globals.turns[edge[1]][1] > globals.poi[globals.target_index].pose.position.y ) or ( globals.turns[edge[0]][1] > globals.poi[globals.target_index].pose.position.y and globals.turns[edge[1]][1] < globals.poi[globals.target_index].pose.position.y):
@@ -91,12 +91,12 @@ class GoToTarget:
                         poi_distance1 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[0]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[0]][1], 2))
                         poi_distance2 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[1]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[1]][1], 2))
 
-                        edges.append( (poi, edge[0], poi_distance1, '') )
-                        edges.append( (edge[0], poi, poi_distance1, '') )
-                        edges.append( (poi, edge[1], poi_distance2, '') )
-                        edges.append( (edge[1], poi, poi_distance2, '') )
+                        globals.edges.append( ('poi', edge[0], poi_distance1, '') )
+                        globals.edges.append( (edge[0], 'poi', poi_distance1, '') )
+                        globals.edges.append( ('poi', edge[1], poi_distance2, '') )
+                        globals.edges.append( (edge[1], 'poi', poi_distance2, '') )
 
-                        edges.remove(edge)
+                        globals.edges.remove(edge)
 
             elif edge[3] == 'V':
                 if abs( globals.turns[edge[0]][1] - globals.poi[globals.target_index].pose.position.y ) < 5:
@@ -105,23 +105,23 @@ class GoToTarget:
                         poi_distance1 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[0]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[0]][1], 2))
                         poi_distance2 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[1]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[1]][1], 2))
 
-                        edges.append( (poi, edge[0], poi_distance1, '') )
-                        edges.append( (edge[0], poi, poi_distance1, '') )
-                        edges.append( (poi, edge[1], poi_distance2, '') )
-                        edges.append( (edge[1], poi, poi_distance2, '') )
+                        globals.edges.append( ('poi', edge[0], poi_distance1, '') )
+                        globals.edges.append( (edge[0], 'poi', poi_distance1, '') )
+                        globals.edges.append( ('poi', edge[1], poi_distance2, '') )
+                        globals.edges.append( (edge[1], 'poi', poi_distance2, '') )
 
-                        edges.remove(edge)
+                        globals.edges.remove(edge)
                         
         if agent_flag:
-            for item in edges:
+            for item in globals.edges:
                 if (item[0] == agent_turn1[4] and item[1] == agent_turn2[4]) or (item[0] == agent_turn2[4] and item[1] == agent_turn1[4]):
-                    edges.remove(item)
+                    globals.edges.remove(item)
             
             agent_distance1 = math.sqrt(math.pow(globals.uxv.pose.position.x - agent_turn1[0], 2) + math.pow(globals.uxv.pose.position.y - agent_turn1[1], 2))
             agent_distance2 = math.sqrt(math.pow(globals.uxv.pose.position.x - agent_turn2[0], 2) + math.pow(globals.uxv.pose.position.y - agent_turn2[1], 2))
 
-            edges.append( (agent, agent_turn1[4], agent_distance1, '') )
-            edges.append( (agent, agent_turn2[4], agent_distance2, '') )
+            globals.edges.append( ('agent', agent_turn1[4], agent_distance1, '') )
+            globals.edges.append( ('agent', agent_turn2[4], agent_distance2, '') )
         
         #if poi_flag:
         #    for item in edges:
@@ -134,6 +134,54 @@ class GoToTarget:
         #    edges.append( (poi, poi_turn1, poi_distance1) )
         #    edges.append( (poi, poi_turn2, poi_distance2) )
 
-        graph = [vertices, edges]
-        print(edges)
+        graph = [globals.vertices, globals.edges]
+
+        print("\n\n***************************************")
+        for item in globals.edges:
+            print(item)
+
+        #SHORTEST PATH
+        my_list = []
+        
+        heading_vertice = -1
+
+        if globals.directions[globals.direction_index] == "W":
+            if agent_turn1[4] < agent_turn2[4]:
+                heading_vertice = 1
+            elif agent_turn1[4] > agent_turn2[4]:
+                heading_vertice = 2
+        elif globals.directions[globals.direction_index] == "N":
+            if agent_turn1[4] < agent_turn2[4]:
+                heading_vertice = 1
+            elif agent_turn1[4] > agent_turn2[4]:
+                heading_vertice = 2
+        elif globals.directions[globals.direction_index] == "E":
+            if agent_turn1[4] < agent_turn2[4]:
+                heading_vertice = 2
+            elif agent_turn1[4] > agent_turn2[4]:
+                heading_vertice = 1
+        elif globals.directions[globals.direction_index] == "S":
+            if agent_turn1[4] < agent_turn2[4]:
+                heading_vertice = 2
+            elif agent_turn1[4] > agent_turn2[4]:
+                heading_vertice = 1
+
+        if heading_vertice == 1:
+            curr = globals.vertices[agent_turn1[4]]
+        elif heading_vertice == 2:
+            curr = globals.vertices[agent_turn2[4]]
+
+        min = sys.maxint
+        next = curr
+
+        while next != 'poi':
+            min = sys.maxint
+            curr = next
+            for edge in globals.edges:
+                if edge[0] == curr and edge[2] < min:
+                    min = edge[2]
+                    next = edge[1]
+                    
+
+        #print(edges)
         #print(graph)
