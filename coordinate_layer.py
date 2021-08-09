@@ -8,12 +8,18 @@ class GoToCoordinate:
 
     def mission_completed(self):
         self.target = None
+        print("NASI")
+        globals.target_index += 1
     
     def looper(self):
-        if globals.vehicle_state == 'TURN':
-            return
+        #if globals.vehicle_state == 'TURN':
+        #    print("pardon")
+        #    return
 
         if self.target == None:
+            globals.rsc.forward_gear()
+            globals.rsc.brake(False)
+            globals.rsc.throttle(0.4)
             return
         
         #print("Speed: ", uxv.state)
@@ -133,8 +139,8 @@ class GoToCoordinate:
                 globals.rsc.brake(False)
                 globals.rsc.throttle(0.4)
                 print("VIN VIN")
-            elif (globals.uxv.pose.position.x > self.target[0] - 2.5) and globals.gear == -1 :
-                globals.throttle(0)
+            elif (globals.uxv.pose.position.x > self.target[0] - 2.5) and globals.rsc.gear == -1 :
+                globals.rsc.throttle(0)
                 globals.brake(True)
                 print("STOP")
             elif globals.uxv.pose.position.x > self.target[0] + 5:

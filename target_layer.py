@@ -1,10 +1,13 @@
 import globals
 import math
 import sys
+import dijkstra
 
 class GoToTarget:
 
     def looper(self):
+
+        index_of_closest_turn = None
         min_distance = 100000
         distance = 100000
         for a in globals.turns:
@@ -18,6 +21,9 @@ class GoToTarget:
             if distance < min_distance:
                 min_distance = distance
                 index_of_closest_turn = globals.turns.index(a)
+
+        if index_of_closest_turn == None:
+            return
 
         agent_flag = False
         if globals.vehicle_state != 'TURN':
@@ -35,8 +41,7 @@ class GoToTarget:
                         agent_turn2 = globals.turns[b]
                         agent_flag = True
 
-
-        globals.vertices = ['agent', 'poi', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+        globals.vertices = [15, 16, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         # H -> Horizontal
         # V -> Vertical
         globals.edges = [
@@ -91,10 +96,10 @@ class GoToTarget:
                         poi_distance1 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[0]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[0]][1], 2))
                         poi_distance2 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[1]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[1]][1], 2))
 
-                        globals.edges.append( ('poi', edge[0], poi_distance1, '') )
-                        globals.edges.append( (edge[0], 'poi', poi_distance1, '') )
-                        globals.edges.append( ('poi', edge[1], poi_distance2, '') )
-                        globals.edges.append( (edge[1], 'poi', poi_distance2, '') )
+                        globals.edges.append( (16, edge[0], poi_distance1, '') )
+                        globals.edges.append( (edge[0], 16, poi_distance1, '') )
+                        globals.edges.append( (16, edge[1], poi_distance2, '') )
+                        globals.edges.append( (edge[1], 16, poi_distance2, '') )
 
                         globals.edges.remove(edge)
 
@@ -105,10 +110,10 @@ class GoToTarget:
                         poi_distance1 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[0]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[0]][1], 2))
                         poi_distance2 = math.sqrt(math.pow(globals.poi[globals.target_index].pose.position.x - globals.turns[edge[1]][0], 2) + math.pow(globals.poi[globals.target_index].pose.position.y - globals.turns[edge[1]][1], 2))
 
-                        globals.edges.append( ('poi', edge[0], poi_distance1, '') )
-                        globals.edges.append( (edge[0], 'poi', poi_distance1, '') )
-                        globals.edges.append( ('poi', edge[1], poi_distance2, '') )
-                        globals.edges.append( (edge[1], 'poi', poi_distance2, '') )
+                        globals.edges.append( (16, edge[0], poi_distance1, '') )
+                        globals.edges.append( (edge[0], 16, poi_distance1, '') )
+                        globals.edges.append( (16, edge[1], poi_distance2, '') )
+                        globals.edges.append( (edge[1], 16, poi_distance2, '') )
 
                         globals.edges.remove(edge)
                         
@@ -120,8 +125,36 @@ class GoToTarget:
             agent_distance1 = math.sqrt(math.pow(globals.uxv.pose.position.x - agent_turn1[0], 2) + math.pow(globals.uxv.pose.position.y - agent_turn1[1], 2))
             agent_distance2 = math.sqrt(math.pow(globals.uxv.pose.position.x - agent_turn2[0], 2) + math.pow(globals.uxv.pose.position.y - agent_turn2[1], 2))
 
-            globals.edges.append( ('agent', agent_turn1[4], agent_distance1, '') )
-            globals.edges.append( ('agent', agent_turn2[4], agent_distance2, '') )
+
+            heading_vertice = -1
+
+            if globals.directions[globals.direction_index] == "W":
+                if agent_turn1[4] < agent_turn2[4]:
+                    heading_vertice = 1
+                elif agent_turn1[4] > agent_turn2[4]:
+                    heading_vertice = 2
+            elif globals.directions[globals.direction_index] == "N":
+                if agent_turn1[4] < agent_turn2[4]:
+                    heading_vertice = 1
+                elif agent_turn1[4] > agent_turn2[4]:
+                    heading_vertice = 2
+            elif globals.directions[globals.direction_index] == "E":
+                if agent_turn1[4] < agent_turn2[4]:
+                    heading_vertice = 2
+                elif agent_turn1[4] > agent_turn2[4]:
+                    heading_vertice = 1
+            elif globals.directions[globals.direction_index] == "S":
+                if agent_turn1[4] < agent_turn2[4]:
+                    heading_vertice = 2
+                elif agent_turn1[4] > agent_turn2[4]:
+                    heading_vertice = 1
+
+            if heading_vertice == 1:
+                curr = globals.vertices[agent_turn1[4]]
+                globals.edges.append( (15, agent_turn1[4], agent_distance1, '') )
+            elif heading_vertice == 2:
+                curr = globals.vertices[agent_turn2[4]]
+                globals.edges.append( (15, agent_turn2[4], agent_distance2, '') )
         
         #if poi_flag:
         #    for item in edges:
@@ -134,54 +167,98 @@ class GoToTarget:
         #    edges.append( (poi, poi_turn1, poi_distance1) )
         #    edges.append( (poi, poi_turn2, poi_distance2) )
 
-        graph = [globals.vertices, globals.edges]
-
-        print("\n\n***************************************")
-        for item in globals.edges:
-            print(item)
-
-        #SHORTEST PATH
-        my_list = []
+        #print("hey")
+        #print(globals.edges)
+        #print(globals.edges)
+        dsp = dijkstra.Graph(17)
+        dsp.looper()
         
-        heading_vertice = -1
+        #---------------------------------------------------------------------------------
+        print('-----------------------------------------------')
+        #print('is_turn: ', globals.is_turn)
+        #print('vehicle_state: ', globals.vehicle_state)
 
-        if globals.directions[globals.direction_index] == "W":
-            if agent_turn1[4] < agent_turn2[4]:
-                heading_vertice = 1
-            elif agent_turn1[4] > agent_turn2[4]:
-                heading_vertice = 2
-        elif globals.directions[globals.direction_index] == "N":
-            if agent_turn1[4] < agent_turn2[4]:
-                heading_vertice = 1
-            elif agent_turn1[4] > agent_turn2[4]:
-                heading_vertice = 2
-        elif globals.directions[globals.direction_index] == "E":
-            if agent_turn1[4] < agent_turn2[4]:
-                heading_vertice = 2
-            elif agent_turn1[4] > agent_turn2[4]:
-                heading_vertice = 1
-        elif globals.directions[globals.direction_index] == "S":
-            if agent_turn1[4] < agent_turn2[4]:
-                heading_vertice = 2
-            elif agent_turn1[4] > agent_turn2[4]:
-                heading_vertice = 1
+        if globals.is_turn and globals.vehicle_state != 'TURN':
 
-        if heading_vertice == 1:
-            curr = globals.vertices[agent_turn1[4]]
-        elif heading_vertice == 2:
-            curr = globals.vertices[agent_turn2[4]]
+            route = globals.path
 
-        min = sys.maxint
-        next = curr
+            print(route)
+            print(globals.curr_turn)
 
-        while next != 'poi':
-            min = sys.maxint
-            curr = next
-            for edge in globals.edges:
-                if edge[0] == curr and edge[2] < min:
-                    min = edge[2]
-                    next = edge[1]
-                    
+            if len(route) == 1:
+                return
+
+            flag = False
+            direction = None
+            #yeniden shortest path bulmasin
+            if len(route) > 2:
+
+                if(route[2] == 16):
+                    direction = globals.directions[globals.direction_index]
+                    globals.is_turn = False
+                    print('its also false ')
+                    globals.gtc.set_location( globals.poi[globals.target_index].pose.position.x , globals.poi[globals.target_index].pose.position.y )
+                    return
+
+                else:
+                    for road in dijkstra.roads:
+                        flag = False
+                        for spot in road:
+                            if(spot == route[1]):
+                                flag = True
+                        for spot in road:
+                            if(spot == route[2] and flag):
+                                if(globals.directions[globals.direction_index] == 'N' or globals.directions[globals.direction_index] == 'S'):
+                                    if(road[0] == 'V'):
+                                        direction = globals.directions[globals.direction_index]
+                                        globals.is_turn = False
+                                        print('its false uf')
+                                elif(globals.directions[globals.direction_index] == 'W' or globals.directions[globals.direction_index] == 'E'):
+                                    if(road[0] == 'H'):
+                                        direction = globals.directions[globals.direction_index]
+                                        globals.is_turn = False
+                                        print('its false b')
+
+            if direction == None:
+                print("here")
+                if len(globals.path) > 1:
+                    if globals.curr_turn != None:
+                        if globals.path[1] != globals.curr_turn:
+                            globals.is_turn = False
+                            print("donme")
+                            return 
+                globals.is_turn = True
+                if globals.directions[globals.direction_index] == 'W':
+                    if route[1] < route[2]:
+                        direction = 'LEFT'
+                    elif route[1] > route[2]:
+                        direction = 'RIGHT'
+                if globals.directions[globals.direction_index] == 'N':
+                    if route[1] < route[2]:
+                        direction = 'RIGHT'
+                    elif route[1] > route[2]:
+                        direction = 'LEFT'
+                if globals.directions[globals.direction_index] == 'E':
+                    if route[1] < route[2]:
+                        direction = 'RIGHT'
+                    elif route[1] > route[2]:
+                        direction = 'LEFT'
+                if globals.directions[globals.direction_index] == 'S':
+                    if route[1] < route[2]:
+                        direction = 'LEFT'
+                    elif route[1] > route[2]:
+                        direction = 'RIGHT'
+
+            if(len(route) > 2):
+                globals.gtt.set_target_corner( route[1] , direction )
+                #print("****")
+                #print(globals.directions[globals.direction_index])
+                #print(direction)
+            if(len(route) == 2):
+                globals.gtc.set_location( globals.poi[globals.target_index].pose.position.x , globals.poi[globals.target_index].pose.position.y )
+
+        #---------------------------------------------------------------------------------
+
 
         #print(edges)
         #print(graph)

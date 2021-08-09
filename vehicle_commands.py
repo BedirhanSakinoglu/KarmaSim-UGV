@@ -153,6 +153,7 @@ class VehicleCommands:
             return
 
         globals.rsc.looper()
+        
         #if directions[direction_index] == 'S':
             #gtc.set_location(0,26)
         #return
@@ -160,7 +161,7 @@ class VehicleCommands:
         if globals.is_first_move:
             self.start_move()
         else:
-            #print("----")
+            
             globals.gtc.looper()
             globals.gtt.looper()
             globals.gttarget.looper()
@@ -171,6 +172,10 @@ class VehicleCommands:
             #print("X : ", uxv.pose.position.x, ", Y : ", uxv.pose.position.y)
             #print(uxv.pose.position.y)
             globals.vehicle_state = None
+            #print('*****************************************')
+            #print('is_turn: ', globals.is_turn)
+            #print('vehicle_state: ', globals.vehicle_state)
+            globals.curr_turn = None
             for x in globals.turns:
                 if abs(x[0]-globals.uxv.pose.position.x) < 5 or globals.turning_flag:
                     if abs(x[1]-globals.uxv.pose.position.y) < 5 or globals.turning_flag:
@@ -179,21 +184,33 @@ class VehicleCommands:
                             pass
                             #print("hadi")
                         else:
-                            globals.vehicle_state
-                            globals.turning_flag = True
-                            globals.recent_index = globals.direction_index
-                            if abs(x[0]-globals.uxv.pose.position.x) < 5 and abs(x[1]-globals.uxv.pose.position.y) < 5:
-                                globals.recent_turn = x
-                                #print("INDEX: ", turns.index(x))
+                            #print("INDEX: ", turns.index(x))
                             #turn_right()
-                            globals.vehicle_state = 'TURN'
-
-                    else:
-                        #print("ADJUST")
-                        self.adjuster()
-                else:
-                    #print("ADJUST")
-                    self.adjuster()
+                            globals.curr_turn = x[4]
+                            print("curr_turn changed! ")
+                            if globals.is_turn:
+                                #print(globals.path)
+                                #print('neden')
+                                globals.turning_flag = True
+                                globals.recent_index = globals.direction_index
+                                if abs(x[0]-globals.uxv.pose.position.x) < 5 and abs(x[1]-globals.uxv.pose.position.y) < 5:
+                                    globals.recent_turn = x
+                                globals.vehicle_state = 'TURN'
+            
+            if globals.vehicle_state != 'TURN':
+                print("ADJUST")
+                self.adjuster()
+                globals.is_turn = True
+                
+                #else:
+                #    print("ADJUST")
+                #    self.adjuster()
+                #    globals.is_turn = True
+                #else:
+                #    print("ADJUST")
+                #    self.adjuster()
+                #    globals.is_turn = True
+            
             
             #print("POI LOCATION : ", globals.poi[globals.target_index].pose.position.x , " ", globals.poi[globals.target_index].pose.position.y)
             #poi --------------

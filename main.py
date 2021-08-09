@@ -65,7 +65,6 @@ if __name__ == "__main__":
     globals.gtt = GoToTurn()
     globals.gttarget = GoToTarget()
     globals.vcoms = VehicleCommands()
-    globals.gtt.set_target_corner(5, 'LEFT')
     
     try:
         timer = rospy.Timer(rospy.Duration(0.01), globals.vcoms.looper)
